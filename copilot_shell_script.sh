@@ -1,11 +1,24 @@
 #!/bin/bash
 
-read -p "please enter your names:" user_names
+# Prompt user for new assignment name
+read -p "Enter the new assignment name: " newAssignment
 
-read -p "please enter your assignment names:" assignment_names
+# Find the main directory (assuming it follows the naming pattern)
+mainDir=$(find . -type d -name "submission_reminder_*" | head -n 1)
 
-subdir="submission_reminder_$user_names"
+if [ -z "$mainDir" ]; then
+    echo "Error: Could not find the submission_reminder directory."
+    exit 1
+fi
 
-sed -i "s/^ASSIGNMENT=.*/ASSIGNMENT=\"$assignment_names\"/" "$subdir/config/config.env"
+# Update the config.env file
+configFile="${mainDir}/config/config.env"
 
-bash "$subdir/startup.sh"
+# Use sed to update the ASSIGNMENT value
+sed -i "s/ASSIGNMENT=.*/ASSIGNMENT=\"${newAssignment}\"/" "$configFile"
+
+echo "Assignment updated to: ${newAssignment}"
+echo "Rerunning the reminder application..."
+
+# Run the startup script
+(cd "$mainDir" && ./startup.sh)
